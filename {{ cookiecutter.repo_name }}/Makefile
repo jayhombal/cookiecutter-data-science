@@ -20,14 +20,26 @@ endif
 # COMMANDS                                                                      #
 #################################################################################
 
-## Install Python Dependencies
-requirements: test_environment
-	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
+## Install or Update Python Dependencies
+requirements: environment.lock
+
+environment.lock: environment.yml
+	conda env update -n $(PROJECT_NAME) -f $<
+	conda env export -n $(PROJECT_NAME) | grep -v "prefix:" > $@
 
 ## Make Dataset
-data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
+data: requirements data/processed/dataset.csv
+
+## Split into train and test set
+train_test_split: data/processed/dataset.csv
+	$(PYTHON_INTERPRETER) {{ cookiecutter.module_name }}/models/train_model.py split $^ data/processed
+
+## Train the models configured in model_config.py
+train: train_test_split
+	$(PYTHON_INTERPRETER) {{ cookiecutter.module_name }}/models/train_model.py train data/processed/train.csv models
+
+## Evaluate the models on the test set
+evaluate: models/report.json
 
 ## Delete all compiled Python files
 clean:
@@ -36,10 +48,17 @@ clean:
 
 ## Lint using flake8
 lint:
-	flake8 src
+	flake8 {{ cookiecutter.module_name }}
+
+## Clean output of jupyter notebooks
+clean_nb_%:
+	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace notebooks/$*.ipynb
+
+## Clean output of all jupyter notebooks
+cleanall_nb: $(patsubst notebooks/%.ipynb,clean_nb_%,$(wildcard notebooks/*.ipynb))
 
 ## Upload Data to S3
-sync_data_to_s3:
+sync_data_up:
 ifeq (default,$(PROFILE))
 	aws s3 sync data/ s3://$(BUCKET)/data/
 else
@@ -47,7 +66,7 @@ else
 endif
 
 ## Download Data from S3
-sync_data_from_s3:
+sync_data_down:
 ifeq (default,$(PROFILE))
 	aws s3 sync s3://$(BUCKET)/data/ data/
 else
@@ -56,30 +75,44 @@ endif
 
 ## Set up python interpreter environment
 create_environment:
-ifeq (True,$(HAS_CONDA))
-		@echo ">>> Detected conda, creating conda environment."
-ifeq (3,$(findstring 3,$(PYTHON_INTERPRETER)))
-	conda create --name $(PROJECT_NAME) python=3
+ifneq ("X$(wildcard ./environment.lock)","X")
+	conda env create --name $(PROJECT_NAME) python={{ cookiecutter.python_version_number }} -f environment.lock
 else
-	conda create --name $(PROJECT_NAME) python=2.7
+	@echo ">>> Creating lockfile from conda environment specification."
+	conda env create --name $(PROJECT_NAME) python={{ cookiecutter.python_version_number }} -f environment.yml
+	conda env export --name $(PROJECT_NAME) | grep -v "prefix:" > environment.lock
 endif
-		@echo ">>> New conda env created. Activate with:\nsource activate $(PROJECT_NAME)"
-else
-	$(PYTHON_INTERPRETER) -m pip install -q virtualenv virtualenvwrapper
-	@echo ">>> Installing virtualenvwrapper if not already installed.\nMake sure the following lines are in shell startup file\n\
-	export WORKON_HOME=$$HOME/.virtualenvs\nexport PROJECT_HOME=$$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\n"
-	@bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=$(PYTHON_INTERPRETER)"
-	@echo ">>> New virtualenv created. Activate with:\nworkon $(PROJECT_NAME)"
-endif
+	@echo ">>> New conda env created. Activate with: 'conda activate $(PROJECT_NAME)'"
 
-## Test python environment is setup correctly
-test_environment:
-	$(PYTHON_INTERPRETER) test_environment.py
+delete_environment:
+	@echo "Deleting conda environment."
+	conda env remove -n $(PROJECT_NAME)
 
 #################################################################################
 # PROJECT RULES                                                                 #
 #################################################################################
 
+## Fetch data into data/raw directory
+data/raw:
+	@echo "Fetching raw data..."
+	mkdir -p $@
+
+## Run generic processing and cleanup scripts to produce interim data
+data/interim: data/raw
+	@echo "Refining raw data..."
+	mkdir -p $@
+	$(PYTHON_INTERPRETER) {{ cookiecutter.module_name }}/data/generic_processing.py $^ $@
+
+data/processed:
+	mkdir -p $@
+
+## Extract features and produce final dataset
+data/processed/dataset.csv: data/interim | data/processed
+	@echo "Producing dataset..."
+	$(PYTHON_INTERPRETER) {{ cookiecutter.module_name }}/features/build_features.py $^ $|
+
+models/report.json: train {{ cookiecutter.module_name }}/models/metric_config.py
+	$(PYTHON_INTERPRETER) {{ cookiecutter.module_name }}/models/predict_model.py evaluate data/processed/test.csv models $@
 
 
 #################################################################################
