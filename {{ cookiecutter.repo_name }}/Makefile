@@ -32,11 +32,11 @@ data: requirements data/processed/dataset.csv
 
 ## Split into train and test set
 train_test_split: data/processed/dataset.csv
-	$(PYTHON_INTERPRETER) {{ cookiecutter.module_name }}/models/train_model.py split $^ data/processed
+	$(PYTHON_INTERPRETER) src/models/train_model.py split $^ data/processed
 
 ## Train the models configured in model_config.py
 train: train_test_split
-	$(PYTHON_INTERPRETER) {{ cookiecutter.module_name }}/models/train_model.py train data/processed/train.csv models
+	$(PYTHON_INTERPRETER) src/models/train_model.py train data/processed/train.csv models
 
 ## Evaluate the models on the test set
 evaluate: models/report.json
@@ -48,7 +48,7 @@ clean:
 
 ## Lint using flake8
 lint:
-	flake8 {{ cookiecutter.module_name }}
+	flake8 src
 
 ## Clean output of jupyter notebooks
 clean_nb_%:
@@ -105,7 +105,7 @@ data/raw:
 data/interim: data/raw
 	@echo "Refining raw data..."
 	mkdir -p $@
-	$(PYTHON_INTERPRETER) {{ cookiecutter.module_name }}/data/generic_processing.py $^ $@
+	$(PYTHON_INTERPRETER) src/data/generic_processing.py $^ $@
 
 data/processed:
 	mkdir -p $@
@@ -113,10 +113,10 @@ data/processed:
 ## Extract features and produce final dataset
 data/processed/dataset.csv: data/interim | data/processed
 	@echo "Producing dataset..."
-	$(PYTHON_INTERPRETER) {{ cookiecutter.module_name }}/features/build_features.py $^ $|
+	$(PYTHON_INTERPRETER) src/features/build_features.py $^ $|
 
 models/report.json: train {{ cookiecutter.module_name }}/models/metric_config.py
-	$(PYTHON_INTERPRETER) {{ cookiecutter.module_name }}/models/predict_model.py evaluate data/processed/test.csv models $@
+	$(PYTHON_INTERPRETER) src/models/predict_model.py evaluate data/processed/test.csv models $@
 
 
 #################################################################################
