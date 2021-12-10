@@ -1,5 +1,7 @@
 # Cookiecutter Data Science
 
+This is a bridge between the https://github.com/hackalog/bus_number/blob/master/TUTORIAL.md and  drivendata/cookiecutter-data-science
+
 _A logical, reasonably standardized, but flexible project structure for doing and sharing data science work._
 
 
@@ -78,6 +80,7 @@ The directory structure of your new project looks like this:
 │   │
 │   ├── data           <- Scripts to download or generate data
 │   │   └── make_dataset.py
+│   │   └── fetch_dataset.py
 │   │
 │   ├── features       <- Scripts to turn raw data into features for modeling
 │   │   └── build_features.py
