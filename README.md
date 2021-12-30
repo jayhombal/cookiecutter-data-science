@@ -113,24 +113,24 @@ If you have done this step before, and you want to update the environment, you n
 Adding your Project repository to Github
 If you follow the instructions from above, you should have
 
-Downloaded the repository
-Created your own project with the desired file and folder structure
-Created your working environment for you project
-The next step is to add it to Github and make it accessible.
+Downloaded the repository  
+Created your own project with the desired file and folder structure  
+Created your working environment for you project  
+The next step is to add it to Github and make it accessible.  
 
-To do this, your should do the following:
+To do this, your should do the following:  
 
-Create a Github repository with the same name as the repository.
-Type git add remote origin git@github.com:<username>/<project_name>.git. In here you need to replace <username> and project_name with your details.
-git push origin master - This will push your project to Github.
-To check that you did this correctly, type
+Create a Github repository with the same name as the repository.  
+Type git add remote origin git@github.com:<username>/<project_name>.git. In here you need to replace <username> and project_name with your details.  
+git push origin master - This will push your project to Github.  
+To check that you did this correctly, type  
 
-git remote -v
-and you should get something that looks like this:
+git remote -v  
+and you should get something that looks like this:  
 
-origin  https://github.com/<username>/<project_name>.git (fetch)
-origin  https://github.com/<username>/<project_name>.git (push)
-where username and project_name pertain to your repository on Github.
+origin  https://github.com/<username>/<project_name>.git (fetch)  
+origin  https://github.com/<username>/<project_name>.git (push)  
+where username and project_name pertain to your repository on Github.  
 
 Now all of the files are online on Github, and should be ready to integrate them with Read The Docs.
  
