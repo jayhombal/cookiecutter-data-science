@@ -4,9 +4,10 @@ This is a bridge between the https://github.com/hackalog/bus_number/blob/master/
 
 _A logical, reasonably standardized, but flexible project structure for doing and sharing data science work._
 
-
+Parent Project:
 #### [Project homepage](http://drivendata.github.io/cookiecutter-data-science/)
 
+I have customized the cookiecutter template to meet my requirements
 
 ### Requirements to use the cookiecutter template:
 -----------
@@ -28,7 +29,7 @@ $ conda install cookiecutter
 ### To start a new project, run:
 ------------
 
-    cookiecutter -c v1 https://github.com/drivendata/cookiecutter-data-science
+    cookiecutter -c v1 https://github.com/mh4ey/cookiecutter-data-science
 
 
 [![asciicast](https://asciinema.org/a/244658.svg)](https://asciinema.org/a/244658)
@@ -95,10 +96,45 @@ The directory structure of your new project looks like this:
 │
 └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
 ```
+## make environment
+You can edit the environment.yml file to include/exclude packages needed by your project.
+
+After having edited the list of packages needed by your project, you can execute the command
+    
+    make environment
+to create environment
+
+If you have done this step before, and you want to update the environment, you need to run
+
+   make update_environment
 
 ## Contributing
 
-We welcome contributions! [See the docs for guidelines](https://drivendata.github.io/cookiecutter-data-science/#contributing).
+Adding your Project repository to Github
+If you follow the instructions from above, you should have
+
+Downloaded the repository
+Created your own project with the desired file and folder structure
+Created your working environment for you project
+The next step is to add it to Github and make it accessible.
+
+To do this, your should do the following:
+
+Create a Github repository with the same name as the repository.
+Type git add remote origin git@github.com:<username>/<project_name>.git. In here you need to replace <username> and project_name with your details.
+git push origin master - This will push your project to Github.
+To check that you did this correctly, type
+
+git remote -v
+and you should get something that looks like this:
+
+origin  https://github.com/<username>/<project_name>.git (fetch)
+origin  https://github.com/<username>/<project_name>.git (push)
+where username and project_name pertain to your repository on Github.
+
+Now all of the files are online on Github, and should be ready to integrate them with Read The Docs.
+ 
+credit: https://cookiecutter-data-science-vc.readthedocs.io/en/latest/getting_started/INSTALL.html
 
 ### Installing development requirements
 ------------
