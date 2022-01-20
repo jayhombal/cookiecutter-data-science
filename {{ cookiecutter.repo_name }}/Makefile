@@ -50,6 +50,10 @@ clean:
 lint:
 	flake8 src
 
+## Clean data/raw folder
+clean/raw:
+	rm -rf data/raw
+	
 ## Clean output of jupyter notebooks
 clean_nb_%:
 	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace notebooks/$*.ipynb
